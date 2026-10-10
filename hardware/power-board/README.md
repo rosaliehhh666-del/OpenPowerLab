@@ -2,6 +2,12 @@
 
 ![Power supply board](../../images/power-supply-board.png)
 
+*PCB 3D 渲染图*
+
+![Power supply board assembled](../../images/power-board-assembled.jpg)
+
+*焊接实物图 — 已验证工作正常*
+
 实用直流稳压电源 — 三路输入、多路输出的模块化电源板
 
 ## 概述
