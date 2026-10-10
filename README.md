@@ -3,16 +3,10 @@
 **开源模块化直流稳压电源与电源拓展板**
 
 ![Power supply PCB render](images/power-supply-board.png)
-
-*可调电源板 — PCB 3D 渲染图*
-
-![Power supply board assembled](images/power-board-assembled.jpg)
-
-*可调电源板 — 焊接实物图（已验证工作正常）*
-
+&nbsp;&nbsp;&nbsp;
 ![Monitoring expansion PCB render](images/monitoring-expansion-board.png)
 
-*电源拓展板 — PCB 3D 渲染图*
+*左：可调电源板 ｜ 右：电源拓展板*
 
 > [!NOTE]
 > **电源板已焊接验证**，各路输出工作正常。拓展板处于设计阶段，待打样验证。
@@ -206,6 +200,10 @@ cd OpenPowerLab
 ### 可调电源板
 
 ![Power supply board labeled](images/power-supply-board.png)
+
+![Power supply board assembled](images/power-board-assembled.jpg)
+
+*焊接实物图 — 已验证工作正常 ✅*
 
 **核心芯片：**
 
