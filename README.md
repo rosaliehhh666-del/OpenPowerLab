@@ -1,6 +1,6 @@
 # OpenPowerLab
 
-**开源模块化直流稳压电源与实时电压电流监测系统**
+**开源模块化直流稳压电源与电源拓展板**
 
 ![Power supply PCB render](images/power-supply-board.png)
 
@@ -8,7 +8,7 @@
 
 ![Monitoring expansion PCB render](images/monitoring-expansion-board.png)
 
-*电压电流监测扩展板 — PCB 3D 渲染图*
+*电源拓展板 — PCB 3D 渲染图*
 
 > [!WARNING]
 > **原型硬件 — 验证中。** 三个可选电源输入端口中**仅可选择一路**供电，**严禁同时给多个输入端通电**。连接负载前请务必确认输出电压和极性。
@@ -23,7 +23,7 @@
 - [快速开始](#快速开始)
 - [板卡详情](#板卡详情)
   - [可调电源板](#可调电源板)
-  - [监测扩展板](#监测扩展板)
+  - [电源拓展板](#电源拓展板)
 - [物料清单 (BOM)](#物料清单-bom)
 - [已知问题与限制](#已知问题与限制)
 - [开发路线图](#开发路线图)
@@ -35,7 +35,7 @@
 OpenPowerLab 是一个开源硬件项目，包含两个互补的模块：
 
 1. **可调电源板 (Power Supply Board)** — 三路可选 DC 输入（单路工作）、多路固定电压输出、两路独立可调输出，支持 USB-C PD 输入。
-2. **电压电流监测扩展板 (Monitoring Expansion Board)** — 基于 APM32F030C8T6 微控制器和 INA4181 四通道电流检测放大器，用于实时电压电流采集与监测。
+2. **电源拓展板 (Power Expansion Board)** — 基于 APM32F030C8T6 微控制器和 INA4181 四通道电流检测放大器，提供 +5 V、+3.3 V、±5 V、ADJ、BUCK 等多路电源输出接口和实时电压电流监测功能。
 
 ## 功能特性
 
@@ -47,7 +47,7 @@ OpenPowerLab 是一个开源硬件项目，包含两个互补的模块：
 | **保护** | 输入保险丝、TVS 瞬态抑制、反接保护（AO4407A） |
 | **USB-C PD** | CH224K PD 诱骗芯片，支持 USB-C 电源输入 |
 | **监测** | 4 通道电压/电流同步采集，INA4181 高精度电流检测 |
-| **显示** | 0.96 寸 OLED 显示屏接口（监测板） |
+| **显示** | 0.96 寸 OLED 显示屏接口（SPI 接口） |
 | **调试** | SWD 调试接口，支持在线仿真与烧录 |
 | **设计工具** | EasyEDA Pro 工程文件，立创EDA 兼容 |
 
@@ -61,26 +61,27 @@ OpenPowerLab 是一个开源硬件项目，包含两个互补的模块：
 | 输入接口 | DC 插座 / USB-C / 5.08 mm 接线端子 | 不可同时供电 |
 | +3.3 V 输出 | AMS1117-3.3 线性稳压 | 最大 1 A（标称） |
 | +5 V 输出 | XL4015 降压 | 最大 5 A（标称） |
-| −5 V 输出 | XL6019 负压产生 | 待验证 |
+| −5 V 输出 | XL6019 负压产生 | 已验证，工作正常 |
 | 可调输出 1 (BUCK) | XL4015 降压可调 | 电位器 WH148 调节 |
 | 可调输出 2 (BUCK) | XL4015 降压可调 | 电位器 WH148 调节 |
 | 开关频率 | ~180 kHz (XL4015) | |
 | 板载保险丝 | 1206L200/6NR (2A) x3 | 多路输入独立保险 |
-| PCB 尺寸 | 待测量 | 双层板 |
+| PCB 尺寸 | 100 mm × 100 mm | 双层板 |
 
-### 监测板规格
+### 电源拓展板规格
 
 | 参数 | 规格 | 备注 |
 | --- | --- | --- |
 | 主控 MCU | **APM32F030C8T6** | ARM Cortex-M0，48 MHz，64 KB Flash |
 | 电流检测 | **INA4181A1IPWR** | 4 通道，双向，零漂移 |
-| 检测电阻 | 50 mΩ x4 | 0805 封装 |
+| 检测电阻 | 50 mΩ × 4 | 0805 封装 |
 | ADC | 12-bit SAR ADC（MCU 内置） | 最高 1 Msps |
-| 显示接口 | 0.96" OLED (HS096T01H13) | I2C 接口 |
+| 显示接口 | 0.96" OLED (HS096T01H13) | SPI 接口，128×64 |
 | 通信接口 | SWD 调试 / GPIO 扩展 | |
-| 输入电压 | +5 V | 由电源板供电 |
+| 输入电压 | +5 V | 由电源板 +5 V 供电 |
+| 输出接口 | +5 V、+3.3 V、±5 V、ADJ、BUCK | XH2.54-2P 插座，分区排列 |
 | 通道数 | 4 路电压 + 4 路电流 | 可监测 4 路输出 |
-| PCB 尺寸 | 待测量 | 双层板 |
+| PCB 尺寸 | 100 mm × 100 mm | 双层板 |
 
 > [!NOTE]
 > 上述标称参数基于元器件 datasheet，实际输出能力、纹波、效率等需经实测验证。请参考[测试文档](docs/testing.md)。
@@ -107,7 +108,7 @@ OpenPowerLab 是一个开源硬件项目，包含两个互补的模块：
                                  电源/信号连接│              │ 电压/电流采样
                                              │              │
                         ┌────────────────────▼──────────────▼───────┐
-                        │       监测扩展板 (Monitoring Board)         │
+                        │       电源拓展板 (Expansion Board)           │
                         │                                            │
                         │   ┌─────────────┐    ┌──────────────┐     │
                         │   │ APM32F030   │◄──►│  INA4181     │     │
@@ -116,8 +117,10 @@ OpenPowerLab 是一个开源硬件项目，包含两个互补的模块：
                         │          │                  │             │
                         │   ┌──────▼──────┐    ┌──────▼───────┐     │
                         │   │  OLED 显示   │    │  电压分压网络 │     │
+                        │   │   (SPI)     │    │              │     │
                         │   └─────────────┘    └──────────────┘     │
                         │                                            │
+                        │  输出接口: +5V / +3.3V / ±5V / ADJ / BUCK  │
                         └────────────────────────────────────────────┘
 ```
 
@@ -138,10 +141,10 @@ OpenPowerLab/
 │   │   │   └── POWER.epro2      # EasyEDA Pro 工程源文件
 │   │   └── gerber/
 │   │       └── power_expand.zip # Gerber 制板文件
-│   └── monitoring-board/        # 监测扩展板
-│       ├── README.md            # 监测板详细说明
+│   └── monitoring-board/        # 电源拓展板
+│       ├── README.md            # 拓展板详细说明
 │       └── BOM.csv              # 物料清单
-├── firmware/                    # 固件源码（监测板）
+├── firmware/                    # 固件源码（拓展板）
 │   ├── README.md                # 固件说明
 │   ├── Src/                     # 源代码
 │   ├── Inc/                     # 头文件
@@ -187,7 +190,7 @@ cd OpenPowerLab
 4. 逐步提高输入电压至 20 V，观察输出稳定性
 5. 参考 [安全指南](docs/safety.md) 和 [测试计划](docs/testing.md)
 
-### 5. 固件烧录（监测板）
+### 5. 固件烧录（拓展板）
 
 1. 通过 SWD 接口连接调试器
 2. 使用 Keil MDK 或 OpenOCD 烧录固件
@@ -226,9 +229,9 @@ cd OpenPowerLab
 
 详细信息请参考 [电源板 README](hardware/power-board/README.md) 和 [BOM 清单](hardware/power-board/BOM.csv)。
 
-### 监测扩展板
+### 电源拓展板
 
-![Monitoring expansion board labeled](images/monitoring-expansion-board.png)
+![Power expansion board labeled](images/monitoring-expansion-board.png)
 
 **核心芯片：**
 
@@ -236,36 +239,38 @@ cd OpenPowerLab
 | --- | --- | --- |
 | APM32F030C8T6 | ARM Cortex-M0 微控制器，48MHz，64KB Flash | 1 |
 | INA4181A1IPWR | 四通道双向电流检测放大器，零漂移 | 1 |
-| HS096T01H13 | 0.96 寸 OLED 显示屏（128×64） | 1 |
+| HS096T01H13 | 0.96 寸 OLED 显示屏（128×64，SPI） | 1 |
 | BLM21PG221SN1D | 铁氧体磁珠（电源滤波） | 1 |
 
-**主要接口：**
-- **XH2.54-2P** x30：电源输入/输出连接（5V、3.3V、ADJ、BUCK 等）
+**主要接口（XH2.54-2P，分区排列）：**
+- **+5 V 区**：8 路 +5 V 输出（电源板 +5 V 输入 → 多路扩展输出）
+- **+3.3 V 区**：8 路 +3.3 V 输出
+- **±5 V 区**：8 路（+5 V / −5 V 各 4 路）
+- **ADJ 区**：可调电压输入输出
+- **BUCK 区**：6 路 BUCK 输出接口
 - **XH2.54-3P** x6：扩展信号接口
 - **5.08 mm 接线端子** x5：大电流输入/输出
 - **SWD 接口**：PB12/SWDIO、PB13/SWCLK、PB14/PB15/GPIO
-- **USB-C**：供电与串口（预留）
 
 **检测通道：**
 - 4 路电流检测：50 mΩ 采样电阻，INA4181 增益 20V/V
 - 4 路电压检测：电阻分压网络，适配 MCU ADC 输入范围
 
-详细信息请参考 [监测板 README](hardware/monitoring-board/README.md) 和 [BOM 清单](hardware/monitoring-board/BOM.csv)。
+详细信息请参考 [电源拓展板 README](hardware/monitoring-board/README.md) 和 [BOM 清单](hardware/monitoring-board/BOM.csv)。
 
 ## 物料清单 (BOM)
 
 | 板卡 | 元器件数量 | BOM 文件 |
 | --- | --- | --- |
 | 可调电源板 | 52 种 | [hardware/power-board/BOM.csv](hardware/power-board/BOM.csv) |
-| 监测扩展板 | 16 种 | [hardware/monitoring-board/BOM.csv](hardware/monitoring-board/BOM.csv) |
+| 电源拓展板 | 16 种 | [hardware/monitoring-board/BOM.csv](hardware/monitoring-board/BOM.csv) |
 
 元器件主要采购自 **LCSC（立创商城）**，BOM 中包含 LCSC 料号，可直接导入立创 BOM 配单。
 
 ## 已知问题与限制
 
-- **XL6019 负压电路**：EN 引脚/调压电路存在已知问题，需进一步排查验证
-- **监测板设计文件**：EasyEDA 源工程和 Gerber 文件尚未上传
-- **固件**：监测板固件正在开发中，暂未发布
+- **拓展板设计文件**：EasyEDA 源工程和 Gerber 文件尚未上传
+- **固件**：拓展板固件为骨架版本，校准和告警功能待完善
 - **电气参数**：输出电流极限、纹波、效率、温升等参数均为标称值，未经过实际测试
 - **保护功能**：过流、过压、短路、反接等保护功能未经过完整验证
 
@@ -275,17 +280,17 @@ cd OpenPowerLab
 
 - [x] 电源板原理图与 PCB 设计
 - [x] 电源板 BOM 清单
-- [ ] 电源板原型验证与测试
-- [ ] 修复 XL6019 负压电路问题
-- [ ] 监测板设计文件开源
-- [ ] 监测板原型验证
+- [x] XL6019 负压电路验证
+- [ ] 电源板原型完整测试
+- [ ] 拓展板设计文件开源
+- [ ] 拓展板原型验证
 - [ ] 发布 v1.0 正式版硬件
 
 ### 固件
 
-- [ ] 基础固件框架（GPIO、UART、ADC、I2C）
-- [ ] INA4181 驱动程序
-- [ ] OLED 显示驱动
+- [x] 基础固件框架（GPIO、UART、ADC、SPI）
+- [x] INA4181 驱动程序
+- [x] OLED 显示驱动（SPI）
 - [ ] 电压电流采集与校准
 - [ ] 数据串口输出
 - [ ] 过压/过流告警功能

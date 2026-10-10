@@ -1,8 +1,8 @@
 /**
  ****************************************************************************************************
  * @file        ssd1306.h
- * @brief       SSD1306 OLED 显示屏驱动头文件
- * @details     0.96" 128x64 OLED, I2C 接口
+ * @brief       SSD1306 OLED 显示屏驱动头文件 (SPI 接口)
+ * @details     0.96" 128x64 OLED, SPI 接口
  * @author      OpenPowerLab
  * @version     V0.1.0
  * @date        2024
@@ -32,6 +32,31 @@ extern "C" {
 #define OLED_COLOR_BLACK            0x00
 #define OLED_COLOR_WHITE            0x01
 #define OLED_COLOR_INVERSE          0x02
+
+/*============================================================================
+ * OLED SPI 控制引脚定义 (在 board.h 中可重定义)
+ *============================================================================*/
+#ifndef OLED_SPI
+#define OLED_SPI                    SPI1
+#endif
+
+/* DC 引脚: 数据/命令选择 (1=数据, 0=命令) */
+#ifndef OLED_DC_PIN
+#define OLED_DC_PIN                 GPIO_PIN_0
+#define OLED_DC_PORT                GPIOB
+#endif
+
+/* RES 引脚: 复位 (低电平复位) */
+#ifndef OLED_RES_PIN
+#define OLED_RES_PIN                GPIO_PIN_1
+#define OLED_RES_PORT               GPIOB
+#endif
+
+/* CS 引脚: 片选 (低电平有效) */
+#ifndef OLED_CS_PIN
+#define OLED_CS_PIN                 GPIO_PIN_2
+#define OLED_CS_PORT                GPIOB
+#endif
 
 /*============================================================================
  * 函数声明

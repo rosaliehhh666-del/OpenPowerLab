@@ -1,8 +1,8 @@
 /**
  ****************************************************************************************************
  * @file        ssd1306.c
- * @brief       SSD1306 OLED 显示屏驱动 (I2C 接口)
- * @details     0.96" 128x64 OLED, 软件/硬件 I2C
+ * @brief       SSD1306 OLED 显示屏驱动 (SPI 接口)
+ * @details     0.96" 128x64 OLED, SPI 4 线接口
  * @author      OpenPowerLab
  * @version     V0.1.0
  * @date        2024
@@ -88,7 +88,7 @@ static const uint8_t s_font5x7[][5] = {
     {0x07,0x08,0x70,0x08,0x07}, // Y
     {0x61,0x51,0x49,0x45,0x43}, // Z
     {0x00,0x7F,0x41,0x41,0x00}, // [
-    {0x55,0x2A,0x55,0x2A,0x55}, // backslash (55/AA pattern)
+    {0x55,0x2A,0x55,0x2A,0x55}, // backslash
     {0x00,0x41,0x41,0x7F,0x00}, // ]
     {0x04,0x02,0x01,0x02,0x04}, // ^
     {0x40,0x40,0x40,0x40,0x40}, // _
@@ -100,7 +100,7 @@ static const uint8_t s_font5x7[][5] = {
     {0x38,0x54,0x54,0x54,0x18}, // e
     {0x08,0x7E,0x09,0x01,0x02}, // f
     {0x18,0xA4,0xA4,0xA4,0x7C}, // g
-    {0x7F,0x08,0x04,0x04,0x78}, // h
+    {0x7C,0x08,0x04,0x04,0x78}, // h
     {0x00,0x44,0x7D,0x40,0x00}, // i
     {0x40,0x80,0x84,0x7D,0x00}, // j
     {0x7F,0x10,0x28,0x44,0x00}, // k
@@ -122,60 +122,67 @@ static const uint8_t s_font5x7[][5] = {
     {0x08,0x36,0x41,0x00,0x00}, // {
     {0x00,0x00,0x77,0x00,0x00}, // |
     {0x00,0x41,0x36,0x08,0x00}, // }
-    {0x08,0x08,0x2A,0x1C,0x08}, // -> (arrow, used ~)
+    {0x08,0x08,0x2A,0x1C,0x08}, // ~
 };
 
 /*============================================================================
- * I2C 底层操作 (简化版，使用软件 I2C 以提高兼容性)
+ * SPI 底层操作
  *============================================================================*/
-static void I2C_Delay(void)
+static void SPI_Init(void)
 {
-    volatile uint32_t i;
-    for (i = 0; i < 10; i++);
+    GPIO_Config_T gpioConfig;
+    SPI_Config_T spiConfig;
+
+    /* 使能 SPI1 和 GPIOA 时钟 */
+    RCM_EnableAPB2PeriphClock(RCM_APB2_PERIPH_SPI1);
+    RCM_EnableAHBPeriphClock(RCM_AHB_PERIPH_GPIOA);
+    RCM_EnableAHBPeriphClock(RCM_AHB_PERIPH_GPIOB);
+
+    /* SPI 引脚: PA5=SCK, PA7=MOSI (复用功能) */
+    gpioConfig.pin = GPIO_PIN_5 | GPIO_PIN_7;
+    gpioConfig.mode = GPIO_MODE_AF_PP;
+    gpioConfig.speed = GPIO_SPEED_10MHz;
+    GPIO_Config(GPIOA, &gpioConfig);
+
+    /* PA6 MISO (可选，上拉输入) */
+    gpioConfig.pin = GPIO_PIN_6;
+    gpioConfig.mode = GPIO_MODE_IN_PU;
+    GPIO_Config(GPIOA, &gpioConfig);
+
+    /* 控制引脚: DC(PB0), RES(PB1), CS(PB2) - 推挽输出 */
+    gpioConfig.pin = OLED_DC_PIN | OLED_RES_PIN | OLED_CS_PIN;
+    gpioConfig.mode = GPIO_MODE_OUT_PP;
+    gpioConfig.speed = GPIO_SPEED_10MHz;
+    GPIO_Config(OLED_DC_PORT, &gpioConfig);
+
+    /* 默认状态: CS=高, DC=高, RES=高 */
+    GPIO_SetBit(OLED_CS_PORT, OLED_CS_PIN);
+    GPIO_SetBit(OLED_DC_PORT, OLED_DC_PIN);
+    GPIO_SetBit(OLED_RES_PORT, OLED_RES_PIN);
+
+    /* SPI 配置: 主机模式, 8bit, 模式0, MSB优先 */
+    spiConfig.mode = SPI_MODE_MASTER;
+    spiConfig.dataLength = SPI_DATA_LENGTH_8B;
+    spiConfig.clockPolarity = SPI_CLKPOL_LOW;     /* CPOL=0 */
+    spiConfig.clockPhase = SPI_CLKPHA_1EDGE;      /* CPHA=0 */
+    spiConfig.nss = SPI_NSS_SOFT;
+    spiConfig.baudrateDiv = SPI_BAUDRATE_DIV_8;   /* 48MHz/8 = 6MHz */
+    spiConfig.firstBit = SPI_FIRSTBIT_MSB;
+    SPI_Config(OLED_SPI, &spiConfig);
+
+    SPI_Enable(OLED_SPI);
 }
 
-static void I2C_Start(void)
+/*============================================================================
+ * SPI 发送一个字节
+ *============================================================================*/
+static void SPI_WriteByte(uint8_t data)
 {
-    GPIO_SetBit(OLED_I2C_SDA_PORT, OLED_I2C_SDA_PIN);
-    GPIO_SetBit(OLED_I2C_SCL_PORT, OLED_I2C_SCL_PIN);
-    I2C_Delay();
-    GPIO_ResetBit(OLED_I2C_SDA_PORT, OLED_I2C_SDA_PIN);
-    I2C_Delay();
-    GPIO_ResetBit(OLED_I2C_SCL_PORT, OLED_I2C_SCL_PIN);
-    I2C_Delay();
-}
-
-static void I2C_Stop(void)
-{
-    GPIO_ResetBit(OLED_I2C_SDA_PORT, OLED_I2C_SDA_PIN);
-    GPIO_SetBit(OLED_I2C_SCL_PORT, OLED_I2C_SCL_PIN);
-    I2C_Delay();
-    GPIO_SetBit(OLED_I2C_SDA_PORT, OLED_I2C_SDA_PIN);
-    I2C_Delay();
-}
-
-static void I2C_WriteByte(uint8_t data)
-{
-    uint8_t i;
-    for (i = 0; i < 8; i++) {
-        if (data & 0x80)
-            GPIO_SetBit(OLED_I2C_SDA_PORT, OLED_I2C_SDA_PIN);
-        else
-            GPIO_ResetBit(OLED_I2C_SDA_PORT, OLED_I2C_SDA_PIN);
-        data <<= 1;
-        I2C_Delay();
-        GPIO_SetBit(OLED_I2C_SCL_PORT, OLED_I2C_SCL_PIN);
-        I2C_Delay();
-        GPIO_ResetBit(OLED_I2C_SCL_PORT, OLED_I2C_SCL_PIN);
-        I2C_Delay();
-    }
-    /* ACK (忽略) */
-    GPIO_SetBit(OLED_I2C_SDA_PORT, OLED_I2C_SDA_PIN);
-    I2C_Delay();
-    GPIO_SetBit(OLED_I2C_SCL_PORT, OLED_I2C_SCL_PIN);
-    I2C_Delay();
-    GPIO_ResetBit(OLED_I2C_SCL_PORT, OLED_I2C_SCL_PIN);
-    I2C_Delay();
+    /* 等待发送缓冲区为空 */
+    while (SPI_ReadStatusFlag(OLED_SPI, SPI_FLAG_TXBE) == RESET);
+    SPI_I2S_TxData(OLED_SPI, data);
+    /* 等待发送完成 */
+    while (SPI_ReadStatusFlag(OLED_SPI, SPI_FLAG_BSY) == SET);
 }
 
 /*============================================================================
@@ -183,11 +190,10 @@ static void I2C_WriteByte(uint8_t data)
  *============================================================================*/
 static void SSD1306_WriteCmd(uint8_t cmd)
 {
-    I2C_Start();
-    I2C_WriteByte(OLED_I2C_ADDR << 1);  /* 写地址 */
-    I2C_WriteByte(0x00);                 /* Co=0, D/C#=0 (命令) */
-    I2C_WriteByte(cmd);
-    I2C_Stop();
+    GPIO_ResetBit(OLED_CS_PORT, OLED_CS_PIN);   /* CS = 低 */
+    GPIO_ResetBit(OLED_DC_PORT, OLED_DC_PIN);   /* DC = 低 (命令) */
+    SPI_WriteByte(cmd);
+    GPIO_SetBit(OLED_CS_PORT, OLED_CS_PIN);     /* CS = 高 */
 }
 
 /*============================================================================
@@ -195,29 +201,27 @@ static void SSD1306_WriteCmd(uint8_t cmd)
  *============================================================================*/
 static void SSD1306_WriteData(uint8_t data)
 {
-    I2C_Start();
-    I2C_WriteByte(OLED_I2C_ADDR << 1);
-    I2C_WriteByte(0x40);                 /* Co=0, D/C#=1 (数据) */
-    I2C_WriteByte(data);
-    I2C_Stop();
+    GPIO_ResetBit(OLED_CS_PORT, OLED_CS_PIN);   /* CS = 低 */
+    GPIO_SetBit(OLED_DC_PORT, OLED_DC_PIN);     /* DC = 高 (数据) */
+    SPI_WriteByte(data);
+    GPIO_SetBit(OLED_CS_PORT, OLED_CS_PIN);     /* CS = 高 */
 }
 
 /*============================================================================
- * I2C GPIO 初始化
+ * 发送多字节数据 (用于整屏刷新, 提高速度)
  *============================================================================*/
-static void I2C_GPIO_Init(void)
+static void SSD1306_WriteDataBurst(const uint8_t *data, uint16_t len)
 {
-    GPIO_Config_T gpioConfig;
+    GPIO_ResetBit(OLED_CS_PORT, OLED_CS_PIN);
+    GPIO_SetBit(OLED_DC_PORT, OLED_DC_PIN);     /* DC = 高 (数据) */
 
-    RCM_EnableAHBPeriphClock(RCM_AHB_PERIPH_GPIOB);
+    while (len--) {
+        while (SPI_ReadStatusFlag(OLED_SPI, SPI_FLAG_TXBE) == RESET);
+        SPI_I2S_TxData(OLED_SPI, *data++);
+    }
+    while (SPI_ReadStatusFlag(OLED_SPI, SPI_FLAG_BSY) == SET);
 
-    gpioConfig.pin = OLED_I2C_SCL_PIN | OLED_I2C_SDA_PIN;
-    gpioConfig.mode = GPIO_MODE_OUT_OD;   /* 开漏输出 */
-    gpioConfig.speed = GPIO_SPEED_10MHz;
-    GPIO_Config(OLED_I2C_SCL_PORT, &gpioConfig);
-
-    GPIO_SetBit(OLED_I2C_SCL_PORT, OLED_I2C_SCL_PIN);
-    GPIO_SetBit(OLED_I2C_SDA_PORT, OLED_I2C_SDA_PIN);
+    GPIO_SetBit(OLED_CS_PORT, OLED_CS_PIN);
 }
 
 /*============================================================================
@@ -225,37 +229,41 @@ static void I2C_GPIO_Init(void)
  *============================================================================*/
 void SSD1306_Init(void)
 {
-    I2C_GPIO_Init();
+    SPI_Init();
 
-    Board_DelayMs(100);
+    /* 硬件复位 */
+    GPIO_SetBit(OLED_RES_PORT, OLED_RES_PIN);
+    Board_DelayMs(10);
+    GPIO_ResetBit(OLED_RES_PORT, OLED_RES_PIN);
+    Board_DelayMs(10);
+    GPIO_SetBit(OLED_RES_PORT, OLED_RES_PIN);
+    Board_DelayMs(20);
 
+    /* 初始化命令序列 */
     SSD1306_WriteCmd(0xAE);  /* Display OFF */
-    SSD1306_WriteCmd(0x20);  /* Set Memory Addressing Mode */
-    SSD1306_WriteCmd(0x10);  /* Page Addressing Mode */
-    SSD1306_WriteCmd(0xB0);  /* Set Page Start Address */
-    SSD1306_WriteCmd(0xC8);  /* Set COM Output Scan Direction */
-    SSD1306_WriteCmd(0x00);  /* Set low column address */
-    SSD1306_WriteCmd(0x10);  /* Set high column address */
-    SSD1306_WriteCmd(0x40);  /* Set start line address */
-    SSD1306_WriteCmd(0x81);  /* Set contrast control */
-    SSD1306_WriteCmd(0xFF);  /* Contrast = 255 */
-    SSD1306_WriteCmd(0xA1);  /* Set segment re-map */
-    SSD1306_WriteCmd(0xA6);  /* Set normal display */
+    SSD1306_WriteCmd(0xD5);  /* Set display clock divide ratio/oscillator */
+    SSD1306_WriteCmd(0xF0);  /* Divide ratio = 1, Osc = max */
     SSD1306_WriteCmd(0xA8);  /* Set multiplex ratio */
     SSD1306_WriteCmd(0x3F);  /* 1/64 duty */
-    SSD1306_WriteCmd(0xA4);  /* Output follows RAM content */
     SSD1306_WriteCmd(0xD3);  /* Set display offset */
     SSD1306_WriteCmd(0x00);  /* No offset */
-    SSD1306_WriteCmd(0xD5);  /* Set display clock divide ratio/oscillator */
-    SSD1306_WriteCmd(0xF0);  /* Divide ratio = 1, Oscillator = max */
-    SSD1306_WriteCmd(0xD9);  /* Set pre-charge period */
-    SSD1306_WriteCmd(0x22);  /* Pre-charge = 2 clocks */
-    SSD1306_WriteCmd(0xDA);  /* Set com pins hardware config */
-    SSD1306_WriteCmd(0x12);  /* 0x12 for 128x64 */
-    SSD1306_WriteCmd(0xDB);  /* Set vcomh deselect level */
-    SSD1306_WriteCmd(0x20);  /* 0.77xVcc */
+    SSD1306_WriteCmd(0x40);  /* Set start line address */
     SSD1306_WriteCmd(0x8D);  /* Charge pump */
     SSD1306_WriteCmd(0x14);  /* Enable charge pump */
+    SSD1306_WriteCmd(0x20);  /* Set Memory Addressing Mode */
+    SSD1306_WriteCmd(0x00);  /* Horizontal Addressing Mode */
+    SSD1306_WriteCmd(0xA1);  /* Set segment re-map (mirror X) */
+    SSD1306_WriteCmd(0xC8);  /* Set COM Output Scan Direction (mirror Y) */
+    SSD1306_WriteCmd(0xDA);  /* Set com pins hardware config */
+    SSD1306_WriteCmd(0x12);  /* 0x12 for 128x64 */
+    SSD1306_WriteCmd(0x81);  /* Set contrast control */
+    SSD1306_WriteCmd(0xCF);  /* Contrast */
+    SSD1306_WriteCmd(0xD9);  /* Set pre-charge period */
+    SSD1306_WriteCmd(0xF1);  /* Pre-charge */
+    SSD1306_WriteCmd(0xDB);  /* Set vcomh deselect level */
+    SSD1306_WriteCmd(0x40);  /* VCOMH */
+    SSD1306_WriteCmd(0xA4);  /* Output follows RAM content */
+    SSD1306_WriteCmd(0xA6);  /* Set normal display */
     SSD1306_WriteCmd(0xAF);  /* Display ON */
 
     SSD1306_Clear();
@@ -273,21 +281,17 @@ void SSD1306_Clear(void)
 }
 
 /*============================================================================
- * 更新屏幕
+ * 更新屏幕 (整帧传输)
  *============================================================================*/
 void SSD1306_UpdateScreen(void)
 {
-    uint8_t page, col;
+    /* 设置页地址模式下的起始地址 */
+    SSD1306_WriteCmd(0xB0);      /* Page 0 */
+    SSD1306_WriteCmd(0x00);      /* Low column */
+    SSD1306_WriteCmd(0x10);      /* High column */
 
-    for (page = 0; page < SSD1306_PAGES; page++) {
-        SSD1306_WriteCmd(0xB0 + page);
-        SSD1306_WriteCmd(0x00);
-        SSD1306_WriteCmd(0x10);
-
-        for (col = 0; col < SSD1306_WIDTH; col++) {
-            SSD1306_WriteData(s_buffer[page * SSD1306_WIDTH + col]);
-        }
-    }
+    /* 一次性传输全部数据 (128 * 8 = 1024 bytes) */
+    SSD1306_WriteDataBurst(s_buffer, sizeof(s_buffer));
 }
 
 /*============================================================================
@@ -307,7 +311,7 @@ void SSD1306_SetPixel(uint8_t x, uint8_t y, uint8_t color)
 }
 
 /*============================================================================
- * 画线
+ * 画线 (Bresenham)
  *============================================================================*/
 void SSD1306_DrawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t color)
 {
@@ -329,7 +333,7 @@ void SSD1306_DrawLine(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t co
 }
 
 /*============================================================================
- * 画矩形
+ * 画矩形 (空心)
  *============================================================================*/
 void SSD1306_DrawRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t color)
 {
@@ -353,7 +357,7 @@ void SSD1306_FillRect(uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t color)
 }
 
 /*============================================================================
- * 设置光标位置 (字符坐标)
+ * 设置光标位置 (字符坐标: 列=0-20, 行=0-7)
  *============================================================================*/
 void SSD1306_SetCursor(uint8_t x, uint8_t y)
 {
