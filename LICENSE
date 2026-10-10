@@ -1,0 +1,110 @@
+CERN Open Hardware Licence Version 2 - Strongly Reciprocal
+============================================================
+
+Copyright (c) 2024 OpenPowerLab Contributors
+
+This Source describes Hardware that is licensed under the CERN-OHL-S v2
+("this Licence").
+
+The Licensor grants You a worldwide, royalty-free, non-exclusive licence
+to do everything with the Source and the Source forms of any
+Modified Versions that would otherwise infringe any rights in the
+Source that the Licensor holds or has the right to grant, subject to
+the conditions of this Licence.
+
+For the purposes of this Licence:
+
+1. "Source" means the form of the Hardware preferred for making
+   modifications, including all components, modules, sub-assemblies,
+   design files, schematics, and layout data, together with any
+   accompanying documentation.
+
+2. "Product" means any physical object made on the basis of the Source
+   or a Modified Version.
+
+3. "Modified Version" means any Source created by modifying or
+   supplementing the Source, or by creating a new design that
+   reproduces all or a substantial part of the original elements of
+   the Source.
+
+4. "Licensor" means the individual or entity that grants this Licence.
+
+5. "You" means the individual or entity exercising rights under this
+   Licence.
+
+6. "Distribution" means any act of providing access to a copy of the
+   Source or a Modified Version to any third party, including any
+   physical transfer of a Product to a third party where the Product
+   is accompanied by, or made available together with, the Source or
+   a Modified Version.
+
+Conditions
+----------
+
+1. **Copyleft/Share-Alike.** If You Distribute Modified Versions of
+   the Source, or Products made from Modified Versions, You must make
+   the Source of those Modified Versions available under this same
+   version of this Licence (or, at Your option, any later version).
+
+2. **Attribution.** If You Distribute the Source, Modified Versions,
+   or Products, You must retain or provide:
+   a. the same copyright or similar proprietary notices that the
+      Source contains;
+   b. a notice that the Source is licensed under the CERN-OHL-S v2;
+   c. a copy or reference to the full text of this Licence; and
+   d. if You Distribute Modified Versions, a notice stating that You
+      have modified the Source.
+
+3. **Availability of Source.** If You Distribute a Product, You must
+   make the corresponding Source available to anyone who receives the
+   Product, in a reasonably accepted manner in the relevant field,
+   and You must inform the recipients where they can obtain the
+   Source.
+
+4. **Web-based Distribution.** If You make the Source or Modified
+   Versions available for download through a network or similar
+   facility, You must also make the corresponding source code
+   available in the same way through the same facility.
+
+5. **No additional restrictions.** You may not impose any further
+   restrictions on the exercise of the rights granted under this
+   Licence beyond what this Licence provides.
+
+6. **Patent grant.** The Licensor grants You a licence under any
+   patent rights the Licensor holds or has the right to grant, to
+   the extent necessary to exercise the rights granted under this
+   Licence.
+
+Disclaimer of Warranty
+----------------------
+
+THE SOURCE AND ANY PRODUCT MADE FROM IT ARE PROVIDED "AS IS", WITHOUT
+WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE LICENSOR
+BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOURCE OR ANY PRODUCT MADE FROM IT.
+
+Limitation of Liability
+-----------------------
+
+IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING
+WILL THE LICENSOR BE LIABLE TO YOU FOR DAMAGES, INCLUDING ANY
+GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF
+THE USE OR INABILITY TO USE THE SOURCE OR ANY PRODUCT (INCLUDING BUT
+NOT LIMITED TO LOSS OF DATA OR DATA BEING RENDERED INACCURATE OR
+LOSSES SUSTAINED BY YOU OR THIRD PARTIES OR A FAILURE OF THE SOURCE
+TO OPERATE WITH ANY OTHER HARDWARE OR SOFTWARE), EVEN IF SUCH LICENSOR
+HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+Full License Text
+-----------------
+
+This is a summary of the CERN-OHL-S v2. The full licence text is
+available at:
+
+https://ohwr.org/cern_ohl_s_v2.txt
+
+For more information about CERN Open Hardware Licences, visit:
+https://ohwr.org/project/cernohl/wikis/home
