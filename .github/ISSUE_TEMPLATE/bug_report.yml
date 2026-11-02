@@ -1,0 +1,101 @@
+name: 硬件 / 固件问题报告
+description: 报告 OpenPowerLab 的硬件设计缺陷、固件 Bug 或文档错误
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈。请尽量填写完整信息 —— 硬件问题缺少测量条件时几乎无法定位。
+        提交前请先搜索现有 Issue，避免重复。
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: 问题类别
+      options:
+        - 硬件设计（原理图 / PCB）
+        - 固件
+        - BOM / 元器件
+        - 文档错误
+        - 其他
+    validations:
+      required: true
+
+  - type: dropdown
+    id: board
+    attributes:
+      label: 涉及板卡
+      options:
+        - 可调电源板
+        - 电源拓展板
+        - 两者均有
+        - 不适用
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: 板卡 / 固件版本
+      description: PCB 丝印版本号（如 v0.1）与固件版本（如 v0.1.0）
+      placeholder: "PCB v0.1 / FW v0.1.0"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 问题描述
+      description: 清晰说明现象
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 预期行为
+    validations:
+      required: true
+
+  - type: textarea
+    id: conditions
+    attributes:
+      label: 测试条件
+      description: 输入电压、负载、环境温度、使用的仪器型号与量程
+      placeholder: |
+        输入电压: 12.0 V（限流 0.5 A）
+        负载: 未接 / 5 Ω 水泥电阻
+        环境温度: 25 °C
+        仪器: UNI-T UT61E, RIGOL DHO814
+    validations:
+      required: true
+
+  - type: textarea
+    id: measurements
+    attributes:
+      label: 实测数据 / 照片
+      description: 关键节点电压电流测量值、示波器波形、照片。可直接拖拽上传
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: 确认
+      options:
+        - label: 我已阅读安全使用指南，并在限流条件下进行测试
+          required: true
+        - label: 我已搜索现有 Issue，未找到相同问题
+          required: true

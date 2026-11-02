@@ -1,0 +1,61 @@
+name: 功能建议 / 设计讨论
+description: 提出新功能、硬件改进或使用场景建议
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        欢迎提出改进建议。硬件类建议请先说明使用场景与实际需求，便于评估可行性与代价。
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: 涉及范围
+      options:
+        - 硬件功能（新增输出 / 保护 / 接口）
+        - PCB 布局与结构
+        - 固件功能
+        - 文档与工具链
+        - 其他
+    validations:
+      required: true
+
+  - type: textarea
+    id: scenario
+    attributes:
+      label: 使用场景
+      description: 你在做什么事情时遇到了这个需求？
+      placeholder: 例如：用拓展板给多个传感器供电，需要每路独立限流
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 期望的方案
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 考虑过的替代方案
+    validations:
+      required: false
+
+  - type: textarea
+    id: tradeoffs
+    attributes:
+      label: 代价与风险
+      description: 例如增加成本、板面积、需要改板
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: 确认
+      options:
+        - label: 我已搜索现有 Issue 与路线图，未发现相同建议
+          required: true

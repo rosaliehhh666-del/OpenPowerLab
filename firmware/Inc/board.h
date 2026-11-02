@@ -58,14 +58,23 @@ extern "C" {
 #define CURRENT_SCALE_FACTOR        (1.0f / (INA4181_GAIN * SHUNT_RESISTANCE_OHM))
 
 /*============================================================================
- * I2C 配置 (OLED)
+ * OLED 配置 (SPI1, 4 线 SPI + 软件片选)
+ * 注意: PA5/PA6/PA7 与 ADC 电流采样通道 PA4-PA7 复用,
+ *       两者不能同时使用, 最终版硬件需确认取舍 (见已知问题)
  *============================================================================*/
-#define OLED_I2C                    I2C1
-#define OLED_I2C_SCL_PIN            GPIO_PIN_6
-#define OLED_I2C_SCL_PORT           GPIOB
-#define OLED_I2C_SDA_PIN            GPIO_PIN_7
-#define OLED_I2C_SDA_PORT           GPIOB
-#define OLED_I2C_ADDR               0x3C  /* SSD1306 I2C 地址 (7-bit) */
+#define OLED_SPI                    SPI1
+#define OLED_SPI_SCK_PIN            GPIO_PIN_5      /* PA5 - SPI1_SCK       */
+#define OLED_SPI_SCK_PORT           GPIOA
+#define OLED_SPI_MISO_PIN           GPIO_PIN_6      /* PA6 - SPI1_MISO (可选) */
+#define OLED_SPI_MISO_PORT          GPIOA
+#define OLED_SPI_MOSI_PIN           GPIO_PIN_7      /* PA7 - SPI1_MOSI      */
+#define OLED_SPI_MOSI_PORT          GPIOA
+#define OLED_DC_PIN                 GPIO_PIN_0      /* PB0 - 数据/命令选择   */
+#define OLED_DC_PORT                GPIOB
+#define OLED_RES_PIN                GPIO_PIN_1      /* PB1 - 复位 (低有效)   */
+#define OLED_RES_PORT               GPIOB
+#define OLED_CS_PIN                 GPIO_PIN_2      /* PB2 - 片选 (低有效)   */
+#define OLED_CS_PORT                GPIOB
 
 /*============================================================================
  * UART 配置 (调试串口)

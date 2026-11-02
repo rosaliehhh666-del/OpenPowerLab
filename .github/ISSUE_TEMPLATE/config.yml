@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 安全使用指南
+    url: https://github.com/rosaliehhh666-del/OpenPowerLab/blob/main/docs/safety.md
+    about: 上电前请先阅读：输入限流、单路供电、静电防护等要求
+  - name: 测试与验证计划
+    url: https://github.com/rosaliehhh666-del/OpenPowerLab/blob/main/docs/testing.md
+    about: 反馈电气问题前，请对照测试项目的测量条件

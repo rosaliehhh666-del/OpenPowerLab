@@ -1,6 +1,14 @@
 # OpenPowerLab
 
-**开源模块化直流稳压电源与电源拓展板**
+**开源模块化直流稳压电源与电源拓展板 · Open-source modular DC power supply & expansion board**
+
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+[![Type: Open Source Hardware](https://img.shields.io/badge/type-open--source%20hardware-orange.svg)](https://www.oshwa.org/definition/)
+[![Firmware: C](https://img.shields.io/badge/firmware-C99-00599C.svg)](firmware/)
+[![EDA: EasyEDA Pro](https://img.shields.io/badge/EDA-EasyEDA%20Pro-1E90FF.svg)](https://pro.lceda.cn/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
+**简体中文** | [English](README.en.md)
 
 ![Power supply PCB render](images/power-supply-board.png)
 &nbsp;&nbsp;&nbsp;
@@ -11,6 +19,9 @@
 > [!NOTE]
 > **电源板已焊接验证**，各路输出工作正常。拓展板处于设计阶段，待打样验证。
 > 三个可选电源输入端口中**仅可选择一路**供电，**严禁同时给多个输入端通电**。连接负载前请务必确认输出电压和极性。
+
+> [!WARNING]
+> 本项目为个人学习性质的开源硬件设计，**不是经过认证的商品电源**。标称参数多取自元器件 datasheet，未经完整实测。用于任何真实负载前，请先阅读 [安全使用指南](docs/safety.md) 与 [测试计划](docs/testing.md)。
 
 ## 目录
 
@@ -23,10 +34,10 @@
 - [板卡详情](#板卡详情)
   - [可调电源板](#可调电源板)
   - [电源拓展板](#电源拓展板)
-- [物料清单 (BOM)](#物料清单-bom)
+- [物料清单-bom](#物料清单-bom)
 - [已知问题与限制](#已知问题与限制)
 - [开发路线图](#开发路线图)
-- [贡献指南](#贡献指南)
+- [参与贡献](#参与贡献)
 - [许可证](#许可证)
 
 ## 项目简介
@@ -38,6 +49,8 @@ OpenPowerLab 是一个开源硬件项目，包含两个互补的模块：
 
 > 💬 **萌新第一次画电源板，还有许多问题需要完善，请谨慎参考，求各位大佬多多指教，感谢！**
 
+设计工具为 **立创 EDA 专业版 (EasyEDA Pro)**，固件为 **C99 + APM32 标准外设库**。项目全套设计文件、BOM、固件与文档一并开源，可完整复刻。
+
 ## 功能特性
 
 | 类别 | 特性 |
@@ -48,7 +61,7 @@ OpenPowerLab 是一个开源硬件项目，包含两个互补的模块：
 | **保护** | 输入保险丝、TVS 瞬态抑制、反接保护（AO4407A） |
 | **USB-C PD** | CH224K PD 诱骗芯片，支持 USB-C 电源输入 |
 | **监测** | 4 通道电压/电流同步采集，INA4181 高精度电流检测 |
-| **显示** | 0.96 寸 OLED 显示屏接口（SPI 接口） |
+| **显示** | 0.96 寸 OLED 显示屏（SPI 接口，SSD1306） |
 | **调试** | SWD 调试接口，支持在线仿真与烧录 |
 | **设计工具** | EasyEDA Pro 工程文件，立创EDA 兼容 |
 
@@ -129,11 +142,15 @@ OpenPowerLab 是一个开源硬件项目，包含两个互补的模块：
 
 ```
 OpenPowerLab/
-├── README.md                    # 项目说明（本文件）
+├── README.md                    # 项目说明（本文件，中文）
+├── README.en.md                 # English README
 ├── CHANGELOG.md                 # 变更日志
 ├── CONTRIBUTING.md              # 贡献指南
-├── LICENSE                      # 硬件许可证（CERN-OHL-S-2.0）
+├── LICENSE                      # GNU General Public License v3.0（全项目统一授权）
 ├── .gitignore                   # Git 忽略规则
+├── .github/                     # Issue / PR 模板
+│   ├── ISSUE_TEMPLATE/
+│   └── PULL_REQUEST_TEMPLATE.md
 ├── hardware/
 │   ├── power-board/             # 可调电源板
 │   │   ├── README.md            # 电源板详细说明
@@ -145,19 +162,22 @@ OpenPowerLab/
 │   └── monitoring-board/        # 电源拓展板
 │       ├── README.md            # 拓展板详细说明
 │       └── BOM.csv              # 物料清单
-├── firmware/                    # 固件源码（拓展板）
+├── firmware/                    # 固件源码（电源拓展板）
 │   ├── README.md                # 固件说明
 │   ├── Src/                     # 源代码
-│   ├── Inc/                     # 头文件
-│   └── MDK-ARM/                 # Keil MDK 工程
+│   └── Inc/                     # 头文件
 ├── docs/                        # 文档
+│   ├── README.md                # 文档索引
 │   ├── hardware.md              # 硬件详细文档
 │   ├── safety.md                # 安全使用指南
 │   └── testing.md               # 测试与验证计划
 └── images/                      # 图片资源
-    ├── power-supply-board.png   # 电源板渲染图
-    └── monitoring-expansion-board.png  # 监测板渲染图
+    ├── power-supply-board.png       # 电源板渲染图
+    ├── power-board-assembled.jpg    # 电源板焊接实物图
+    └── monitoring-expansion-board.png  # 拓展板渲染图
 ```
+
+> 说明：电源拓展板的 EasyEDA 源工程与 Gerber 尚未上传；Keil MDK 工程尚未提交。详见 [已知问题与限制](#已知问题与限制)。
 
 ## 快速开始
 
@@ -258,8 +278,8 @@ cd OpenPowerLab
 - **SWD 接口**：PB12/SWDIO、PB13/SWCLK、PB14/PB15/GPIO
 
 **检测通道：**
-- 4 路电流检测：50 mΩ 采样电阻，INA4181 增益 20V/V
-- 4 路电压检测：电阻分压网络，适配 MCU ADC 输入范围
+- 4 路电流检测：50 mΩ 采样电阻，INA4181 增益 20V/V，满量程约 ±3.3 A
+- 4 路电压检测：68 kΩ / 10 kΩ 分压网络，最大可测约 25.7 V
 
 详细信息请参考 [电源拓展板 README](hardware/monitoring-board/README.md) 和 [BOM 清单](hardware/monitoring-board/BOM.csv)。
 
@@ -275,7 +295,9 @@ cd OpenPowerLab
 ## 已知问题与限制
 
 - **拓展板设计文件**：EasyEDA 源工程和 Gerber 文件尚未上传
+- **固件工程文件**：Keil MDK 工程（`firmware/MDK-ARM/`）尚未提交，当前仅有源码
 - **固件**：拓展板固件为骨架版本，校准和告警功能待完善
+- **引脚复用**：拓展板 PA5 / PA6 / PA7 同时用作 ADC 电流采样输入与 SPI1（OLED）引脚，二者存在复用冲突，需在最终版硬件中确认取舍（见 [拓展板引脚分配](hardware/monitoring-board/README.md)）
 - **电气参数**：输出电流极限、纹波、效率、温升等参数均为标称值，未经过实际测试
 - **保护功能**：过流、过压、短路、反接等保护功能未经过完整验证
 
@@ -305,28 +327,45 @@ cd OpenPowerLab
 
 - [x] 项目 README 和基础文档
 - [x] BOM 清单
+- [x] 中英文双语文档
 - [ ] 原理图 PDF
 - [ ] 连接器引脚定义图
 - [ ] 装配指南
 - [ ] 测试报告
 
-## 贡献指南
+## 参与贡献
 
-欢迎提交 Issue 和 Pull Request！
+欢迎提交 Issue 和 Pull Request！本项目采用 GPL-3.0，衍生设计同样需要开源。
 
 - **硬件 Bug 反馈**：请说明板卡版本、输入电压、负载情况、相关引脚测量值和使用的仪器
 - **硬件修改建议**：请先开 Issue 讨论，附上原理图/PCB 修改说明和测试数据
 - **固件贡献**：请遵循代码规范，附上功能说明和测试结果
-- **文档改进**：欢迎修正错误、补充说明
+- **文档改进**：欢迎修正错误、补充说明、参与中英互译
 
-详细请参考 [CONTRIBUTING.md](CONTRIBUTING.md)。
+详细规范请参考 [CONTRIBUTING.md](CONTRIBUTING.md)。文档索引见 [docs/README.md](docs/README.md)。
 
 ## 许可证
 
-**硬件设计** (hardware/ 目录)：[CERN-OHL-S-2.0](LICENSE) — 强 copyleft 开源硬件许可证
+本项目**全部内容**（硬件设计文件、固件源码、文档与图片）统一采用
+**[GNU General Public License v3.0](LICENSE)** 授权，SPDX 标识符：`GPL-3.0-only`。
 
-**固件** (firmware/ 目录)：MIT License — 宽松的软件许可证
+```
+OpenPowerLab  Copyright (C) 2024-2026  Rosalie and OpenPowerLab Contributors
 
-**文档** (docs/ 目录及根目录 markdown 文件)：CC-BY-4.0 — 知识共享署名 4.0 国际许可
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+```
 
-© 2024 OpenPowerLab Contributors | Designed with ❤️ by Rosalie
+要点：
+
+- **可自由使用**：商用、修改、分发、私用均允许
+- **必须开源**：分发修改后的设计或固件时，须以 GPL-3.0 公开对应完整源文件
+- **保留声明**：须保留版权声明与许可证文本，并标明修改内容
+- **无担保**：作者不对任何损坏或人身伤害承担责任
+
+> [!NOTE]
+> GPL-3.0 是为软件设计的许可证，其条文基于「源代码 / 目标代码」概念。本项目按你的要求将硬件设计文件一并纳入 GPL-3.0 授权；若你的使用场景对硬件许可有严格法务要求，可另行参考 OSI 认证的开源硬件许可证 [CERN-OHL-S-2.0](https://ohwr.org/cern_ohl_s_v2.txt)。
+
+© 2024-2026 OpenPowerLab Contributors · Designed with ❤️ by Rosalie

@@ -1,22 +1,26 @@
-# 监测板固件 (Firmware)
+# 电源拓展板固件 (Firmware)
 
-监测扩展板的固件源码，基于 APM32F030C8T6（ARM Cortex-M0）开发。
+电源拓展板的固件源码，基于 APM32F030C8T6（ARM Cortex-M0）开发。
 
 ## 概述
 
-本固件实现 4 路电压和电流的实时采集、OLED 显示、串口输出和告警功能。
+本固件实现 4 路电压和电流的实时采集、OLED 显示、串口输出，并预留校准与告警功能。
+
+> [!NOTE]
+> 当前为骨架版本：采集链路、显示、按键已跑通，**校准系数与告警阈值仍为默认值**，测量精度未经过标准仪器比对。
 
 ## 硬件支持
 
 | 外设 | 驱动状态 | 说明 |
 | --- | --- | --- |
-| GPIO | ✅ | 按键、LED、控制引脚 |
-| ADC | ✅ | 8 通道 ADC 采集（4 电压 + 4 电流） |
-| I2C | ✅ | OLED 显示屏 |
-| UART | ✅ | 串口数据输出 |
+| GPIO | ✅ | 按键、控制引脚 |
+| ADC | ✅ | 8 通道扫描采集（4 电压 + 4 电流）+ 滑动平均滤波 |
+| SPI | ✅ | OLED 显示屏（SPI1，软件片选） |
+| UART | ✅ | 串口数据输出（USART1，115200） |
 | INA4181 | ✅ | 电流检测（模拟输出 + ADC 采样） |
-| SSD1306 OLED | ✅ | 0.96" OLED 显示 |
-| 校准系统 | 🚧 | 增益/偏移校准 |
+| SSD1306 OLED | ✅ | 0.96" OLED 显示，双页面 |
+| 按键交互 | ✅ | 20 ms 消抖，页面切换 |
+| 校准系统 | 🚧 | 增益/偏移校准，参数待写入 Flash |
 | 告警功能 | 🚧 | 过压/过流告警 |
 
 ## 目录结构
@@ -25,44 +29,43 @@
 firmware/
 ├── README.md              # 本文件
 ├── Src/                   # 源代码
-│   ├── main.c             # 主程序
-│   ├── board.c            # 板级初始化
-│   ├── adc.c              # ADC 采集驱动
+│   ├── main.c             # 主程序与显示页面
+│   ├── board.c            # 板级初始化、时基、按键
+│   ├── adc.c              # ADC 多通道采集 + 滑动平均滤波
 │   ├── ina4181.c          # INA4181 电流采集
-│   ├── ssd1306.c          # SSD1306 OLED 驱动
+│   ├── ssd1306.c          # SSD1306 OLED 驱动（SPI）
 │   └── uart.c             # 串口通信
-├── Inc/                   # 头文件
-│   ├── main.h
-│   ├── board.h
-│   ├── adc.h
-│   ├── ina4181.h
-│   ├── ssd1306.h
-│   └── uart.h
-└── MDK-ARM/               # Keil MDK 工程（待添加）
+└── Inc/                   # 头文件
+    ├── main.h
+    ├── board.h
+    ├── adc.h
+    ├── ina4181.h
+    ├── ssd1306.h
+    └── uart.h
 ```
+
+> Keil MDK 工程（`MDK-ARM/OpenPowerLab.uvprojx`）尚未提交，见根目录 README 的「已知问题与限制」。
 
 ## 功能说明
 
 ### 电压电流采集
-- 4 路电压采集：通过电阻分压网络 + ADC
-- 4 路电流采集：INA4181 差分放大 + ADC
+- 4 路电压采集：68 kΩ / 10 kΩ 分压网络 + ADC（PA0–PA3）
+- 4 路电流采集：INA4181 差分放大 + ADC（PA4–PA7）
 - 采样率：约 100 Hz（可配置）
 - 数据滤波：滑动平均滤波
 
 ### OLED 显示
-- 显示 4 路电压和电流值
-- 支持页面切换（按键控制）
-- 显示总功率和累计电量
+- 页面 0：4 路电压 / 电流 / 功率总览
+- 页面 1：合计功率与详细参数
+- 按键切换页面
 
 ### 串口输出
 - 输出格式：CSV 文本
 - 波特率：115200 bps
-- 可通过串口发送命令配置参数
+- 可通过串口发送命令配置参数（计划中）
 
 ### 告警功能（计划中）
-- 过压保护（OVP）
-- 过流保护（OCP）
-- 过功率保护（OPP）
+- 过压保护（OVP）/ 过流保护（OCP）/ 过功率保护（OPP）
 - 告警阈值可配置
 
 ## 构建方式
@@ -70,7 +73,7 @@ firmware/
 ### 使用 Keil MDK（推荐）
 1. 安装 Keil MDK-ARM
 2. 安装 APM32F0xx 器件支持包
-3. 打开 `MDK-ARM/OpenPowerLab.uvprojx`
+3. 打开 `MDK-ARM/OpenPowerLab.uvprojx`（待提交）
 4. 编译并下载
 
 ### 使用 GCC + OpenOCD（备选）
@@ -99,19 +102,21 @@ arm-none-eabi-gcc ...
 | PA2 | ADC_IN2 | 电压通道 3 |
 | PA3 | ADC_IN3 | 电压通道 4 |
 | PA4 | ADC_IN4 | 电流通道 1（INA4181 OUT1） |
-| PA5 | ADC_IN5 | 电流通道 2（INA4181 OUT2） |
-| PA6 | ADC_IN6 | 电流通道 3（INA4181 OUT3） |
-| PA7 | ADC_IN7 | 电流通道 4（INA4181 OUT4） |
-| PB6 | I2C1_SCL | OLED 时钟 |
-| PB7 | I2C1_SDA | OLED 数据 |
+| PA5 | ADC_IN5 / SPI1_SCK | 电流通道 2（INA4181 OUT2）／OLED 时钟，**复用** |
+| PA6 | ADC_IN6 / SPI1_MISO | 电流通道 3（INA4181 OUT3）／OLED MISO（可选），**复用** |
+| PA7 | ADC_IN7 / SPI1_MOSI | 电流通道 4（INA4181 OUT4）／OLED 数据，**复用** |
+| PB0 | GPIO_Output | OLED DC（数据/命令选择） |
+| PB1 | GPIO_Output | OLED RES（复位） |
+| PB2 | GPIO_Output | OLED CS（片选） |
 | PA9 | USART1_TX | 串口发送 |
 | PA10 | USART1_RX | 串口接收 |
-| PC13 | GPIO_Input | 用户按键 |
+| PC13 | GPIO_Input | 用户按键（低电平有效） |
 | PB12 | SWDIO | SWD 数据 |
 | PB13 | SWCLK | SWD 时钟 |
 
-> [!NOTE]
-> 引脚分配可能根据 PCB 最终版本调整，以实际硬件为准。
+> [!WARNING]
+> PA5 / PA6 / PA7 同时承担 ADC 电流采样与 SPI1（OLED）功能，硬件上不能并行使用。
+> 当前固件按 SPI 初始化，此时 2–4 路电流采样将失效。最终版硬件需重新分配引脚（见根目录「已知问题与限制」）。
 
 ## 串口协议
 
@@ -144,7 +149,7 @@ CH1_V,CH1_I,CH2_V,CH2_I,CH3_V,CH3_I,CH4_V,CH4_I\n
 
 ### 电流校准系数
 每路电流通道有两个校准参数：
-- `gain`：增益系数（默认 = 1 / (INA4181增益 × 采样电阻)）
+- `gain`：增益系数（默认 = 1 / (INA4181增益 × 采样电阻) = 1 A/V）
 - `offset`：偏移电流（默认 0）
 
 计算公式：`I_actual = (ADC_val * V_ref / 4096 - offset_v) * gain`
@@ -157,17 +162,17 @@ CH1_V,CH1_I,CH2_V,CH2_I,CH3_V,CH3_I,CH4_V,CH4_I\n
 ## 开发计划
 
 - [x] 基础驱动框架
-- [x] ADC 多通道采集
+- [x] ADC 多通道采集 + 滑动平均滤波
 - [x] INA4181 电流采样（模拟输出模式）
-- [x] SSD1306 OLED 驱动
+- [x] SSD1306 OLED 驱动（SPI）
 - [x] UART 数据输出
+- [x] 多页面显示与按键交互
 - [ ] 数据滤波与校准系统
-- [ ] OLED UI 界面设计
-- [ ] 按键交互
+- [ ] OLED UI 界面优化
 - [ ] 告警功能
 - [ ] 低功耗模式
 - [ ] 数据记录（Flash 存储）
 
 ## 许可证
 
-MIT License — 详见项目根目录说明。
+GNU General Public License v3.0 — 见项目根目录 [LICENSE](../LICENSE)。
