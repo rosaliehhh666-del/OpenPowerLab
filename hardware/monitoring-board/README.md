@@ -4,6 +4,8 @@
 
 电源拓展板 — 基于 APM32F030 + INA4181 的多路电源扩展与实时监测模块
 
+拓展板已完成制作，实物照片待补。可从 [POWER.epro2](../power-board/source/POWER.epro2) 打开 `Board2 → Schematic3 → P1` 查看原理图，并打开 `PCB2` 查看布局。
+
 ## 概述
 
 本板卡是 OpenPowerLab 项目的电源拓展模块，配合可调电源板使用。一方面将电源板的 +5 V、+3.3 V、±5 V、ADJ、BUCK 等输出扩展为多路 XH2.54 插座，方便连接各种负载；另一方面通过 APM32F030 微控制器和 INA4181 四通道电流检测放大器，实现 4 路输出的电压和电流实时采集与 OLED 显示。
@@ -198,12 +200,13 @@
 | 文件/目录 | 说明 |
 | --- | --- |
 | `BOM.csv` | 物料清单 |
-| `source/` | EasyEDA Pro 工程源文件（待上传） |
+| [POWER.epro2](../power-board/source/POWER.epro2) | 两块板共用的嘉立创EDA可编辑源工程 |
 | `gerber/` | Gerber 制板文件（待上传） |
 
 ## 已知问题与 TODO
 
-- [ ] 上传 EasyEDA 工程源文件和 Gerber
+- [x] 公开可编辑源工程
+- [ ] 补充拓展板 Gerber 和实物照片
 - [ ] 完善引脚分配定义
 - [ ] 验证 INA4181 采样精度
 - [ ] 完成固件校准和告警功能

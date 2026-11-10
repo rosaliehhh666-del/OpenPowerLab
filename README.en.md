@@ -18,7 +18,7 @@
 
 > [!NOTE]
 > The **power supply board has been assembled and verified**; all outputs work as expected.
-> The expansion board is still in the design stage and awaits prototype validation.
+> The expansion board has been built. Assembly photos will be added later.
 > **Only one of the three input ports may be powered at a time** — never power multiple inputs simultaneously.
 > Always verify output voltage and polarity before connecting a load.
 
@@ -249,7 +249,7 @@ Components are sourced mainly from **LCSC**; the BOM files include LCSC part num
 
 ## Known Issues & Limitations
 
-- **Expansion board design files**: EasyEDA project and Gerbers are not yet published
+- **Expansion board design files**: The editable [POWER.epro2](hardware/power-board/source/POWER.epro2) contains the expansion schematic (`Board2 → Schematic3 → P1`) and layout (`PCB2`). Separate expansion-board Gerbers have yet to be published.
 - **Firmware project**: the Keil MDK project is not committed yet — only sources are available
 - **Firmware maturity**: skeleton implementation; calibration and alarm features are incomplete
 - **Pin conflicts**: PA5 / PA6 / PA7 are shared between ADC current sensing and SPI1 (OLED); this must be resolved in the final hardware revision
@@ -263,8 +263,9 @@ Components are sourced mainly from **LCSC**; the BOM files include LCSC part num
 - [x] −5 V rail validated (XL6019)
 - [x] Power board assembled and functionally verified
 - [ ] Full power board characterisation (load / ripple / efficiency / thermal)
-- [ ] Publish expansion board design files
-- [ ] Expansion board prototype validation
+- [x] Publish editable expansion board design
+- [x] Build expansion board
+- [ ] Add expansion board assembly photos
 - [ ] v1.0 hardware release
 
 ## Contributing
