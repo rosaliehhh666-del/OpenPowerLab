@@ -51,7 +51,7 @@ OpenPowerLab is an open hardware project built around two complementary modules:
 
 > 💬 *This is my first power supply board design. Many aspects still need refinement — please use it with care and feel free to point out issues.*
 
-Design files are created in **EasyEDA Pro**; the firmware is **C99** against the APM32 standard peripheral library. Schematics, BOM, firmware and documentation are all published, so the build can be reproduced end to end.
+Design files are created in **EasyEDA Pro**; the firmware is **C99** against the APM32 standard peripheral library. The shared editable project contains the power board (Board1) and monitoring expansion board (Board2). The repository includes BOMs and expansion firmware sources. A standalone expansion Gerber archive and a ready-to-build firmware project are pending. The expansion board has been built, and assembly photos are pending.
 
 ## Features
 
